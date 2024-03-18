@@ -11,7 +11,7 @@ RewriteRule ^sayfa-([0-9a-zA-Z-_]+)$  menu-detay.php?sef=$1 [L,QSA]
 
 # 404 Sayfa Ekleme
 
-ErrorDocument 404 https://www.muhasebedefteri.com.tr/proje/c2c/c2c/404
+#  ErrorDocument 404 
 
 
 

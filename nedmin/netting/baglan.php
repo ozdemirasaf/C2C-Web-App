@@ -1,8 +1,7 @@
 <?php
 try {
 
-	$db = new PDO("mysql:host=localhost;dbname=muhadefter_81;charset=utf8", 'muhadefter', 'eKknTQFTuT');
-	// echo 'baglandı Basarılı';
+	$db = new PDO("mysql:host=localhost;dbname=DbName;charset=utf8", 'userName', 'pass');
 } catch (PDOException $e) {
 
 	echo $e->getMessage();
