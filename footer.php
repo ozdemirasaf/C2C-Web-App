@@ -1,3 +1,21 @@
+<?php
+// Include edilen dosyaları erişim engelleme
+/*
+    * Girilmemesi İstenen yerlere bunları kullana bilirsiniz
+    * Erişim Yasağı Atan Ve Çok Önemli olan Bir fonsiyon
+    */
+
+
+if (basename($_SERVER['PHP_SELF'])  == basename(__FILE__)) {
+
+    exit("Burada Erişim Yapmanız Yasak !!");
+}
+
+
+?>
+
+
+
 <footer>
     <div class="footer-area-top">
         <div class="container">

@@ -1,9 +1,7 @@
 <?php
-error_reporting(E_ALL);
-ini_set("display_errors", 1);
-
 // ob_start();
 // session_start();
+date_default_timezone_set('Europe/Istanbul');
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -110,10 +108,26 @@ if (isset($_POST['musteriKaydet'])) {
 
 if (isset($_POST['musterigiris'])) {
 
+    // Captcha Klasor cekimi, classini cekimi, sorgu yazimi
 
-    echo  $kullanici_mail = htmlspecialchars($_POST['kullmail']);
-    echo "<br>";
-    echo $kullanici_password = md5($_POST['password']);
+
+    require_once '../../securimage/securimage.php';
+
+    $securimage = new Securimage();
+
+    if ($securimage->check($_POST['captcha_code']) == false) {
+        header("Location:../../login?durum=captchaHatali");
+        exit;
+    }
+
+    // Captcha Bitti
+
+
+
+
+    $kullanici_mail = htmlspecialchars($_POST['kullmail']);
+
+    $kullanici_password = md5($_POST['password']);
 
 
 
@@ -135,7 +149,23 @@ if (isset($_POST['musterigiris'])) {
 
     if ($say == 1) {
 
-        echo $_SESSION['musterikullanici_mail'] = $kullanici_mail;
+
+        $kullanici_ip = $_SERVER['REMOTE_ADDR'];
+
+        $zamanguncelle = $db->prepare("UPDATE kullanici SET
+        kullanici_sonzaman=:kullanici_sonzaman,
+        kullanici_sonip=:kullanici_sonip
+        WHERE kullanici_mail='$kullanici_mail'");
+
+        $uptada = $zamanguncelle->execute(array(
+            'kullanici_sonzaman' => date("Y-m-d H:i:s"),
+            'kullanici_sonip' =>  $kullanici_ip
+        ));
+
+
+
+        $_SESSION['musterikullanici_sonzaman'] = strtotime(date("Y-m-d H:i:s"));
+        $_SESSION['musterikullanici_mail'] = $kullanici_mail;
 
         header("Location:../../index?durum=girisBasarili");
         exit;
@@ -382,5 +412,248 @@ if (isset($_POST['mazagaUrunEkle'])) {
     } else {
 
         Header("Location:../../urun-ekle.php.php?durum=no");
+    }
+}
+
+
+if (isset($_POST['siparisOnayIslemleri'])) {
+
+    // Siparis Taplasuna Kayıt
+
+    $kaydet = $db->prepare("INSERT INTO siparis SET
+    kullanici_id=:id,
+    kullanici_idsatici=:saticiId
+    ");
+
+    $insert = $kaydet->execute(array(
+        'id' => htmlspecialchars($_SESSION['kullaniciID']),
+        'saticiId' => htmlspecialchars($_POST['kullanici_satici'])
+    ));
+
+    // Bitti
+
+
+    // Siparis_detay Tablosuna Kayıt
+
+    /*
+        * $sonkayitid => değişkeni kaydedilen son ID sana verir
+
+
+    */
+
+    if ($insert) {
+
+        $sonkayitid = $db->lastInsertId();
+
+        $sipariskaydet = $db->prepare("INSERT INTO siparis_detay SET
+        siparis_id=:siparis_id,
+        kullanici_id=:id,
+        kullanici_idsatici=:saticiId,
+        urun_id=:urun_id,
+        urun_fiyat=:urun_fiyat
+    ");
+
+
+        $insertkaydet = $sipariskaydet->execute(array(
+            'siparis_id' => $sonkayitid,
+            'id' => htmlspecialchars($_SESSION['kullaniciID']),
+            'saticiId' => htmlspecialchars($_POST['kullanici_satici']),
+            'urun_id' => htmlspecialchars($_POST['urun_id']),
+            'urun_fiyat' => htmlspecialchars($_POST['urun_fiyat'])
+        ));
+
+
+
+        if ($insertkaydet) {
+
+
+            header("location:../../siparislerim");
+            exit;
+        }
+
+        // Bitti
+
+    } else {
+        header("location:../../404.php");
+        exit;
+    }
+}
+
+
+
+
+if ($_GET['urunonay'] == "ok") {
+
+
+    // $urundetayId = $_GET['urundetayId'];
+
+    $urunId = $_GET['urunId'];
+
+    $siparisGuncelleSor = $db->prepare("UPDATE siparis_detay SET
+    siparisdetay_siparisdetay_onay=:siparisdetay_siparisdetay_onay
+    WHERE siparisdetay_id={$_GET['urundetayId']}");
+
+    $siparisGuncelleCek = $siparisGuncelleSor->execute(array(
+        'siparisdetay_siparisdetay_onay' => 2
+    ));
+
+    if ($siparisGuncelleCek) {
+        header("location:../../siparislerim-detay?siparisId=$urunId");
+        exit;
+    } else {
+        header("location:../production/magaza-basvuru.php?durum=bilgiGuncellenemedi");
+        exit;
+    }
+}
+
+
+if ($_GET['urunTeslim'] == "ok") {
+
+
+    // $urundetayId = $_GET['urundetayId'];
+
+    $urunId = $_GET['urunId'];
+
+    $siparisGuncelleSor = $db->prepare("UPDATE siparis_detay SET
+    siparisdetay_siparisdetay_onay=:siparisdetay_siparisdetay_onay
+    WHERE siparisdetay_id={$_GET['urundetayId']}");
+
+    $siparisGuncelleCek = $siparisGuncelleSor->execute(array(
+        'siparisdetay_siparisdetay_onay' => 1
+    ));
+
+    if ($siparisGuncelleCek) {
+        header("location:../../yeni-siparisler?siparisId=$urunId");
+        exit;
+    } else {
+        header("location:../production/magaza-basvuru.php?durum=bilgiGuncellenemedi");
+        exit;
+    }
+}
+
+
+if (isset($_POST['yorumPuanIslemleri'])) {
+
+    $siparis_id = $_POST['siparis_id'];
+
+    $kaydet = $db->prepare("INSERT INTO yorumlar SET
+    urun_id=:urun_id,
+    yorum_detay=:yorum_detay,
+    yorum_puan=:yorum_puan,
+    kullanici_id=:kullanici_id
+    ");
+
+    $insert = $kaydet->execute(array(
+        'urun_id' => htmlspecialchars($_POST['urun_id']),
+        'yorum_detay' => htmlspecialchars($_POST['yorum_detay']),
+        'yorum_puan' => htmlspecialchars($_POST['yorum_puan']),
+        'kullanici_id' => htmlspecialchars($_SESSION['kullaniciID'])
+    ));
+
+    if ($insert) {
+
+
+        $siparisGuncelleSor = $db->prepare("UPDATE siparis_detay SET
+        siparisdetay_yorumonay=:siparisdetay_yorumonay
+        WHERE siparis_id={$siparis_id}");
+
+        $siparisGuncelleCek = $siparisGuncelleSor->execute(array(
+            'siparisdetay_yorumonay' => 1
+        ));
+
+
+
+        header("location:../../siparislerim-detay?siparisId=$siparis_id&durum=ok");
+        exit;
+    } else {
+        header("location:../production/siparislerim-detay?siparisId=$siparis_id&durum=no");
+        exit;
+    }
+}
+
+
+if (isset($_POST['mesajgelislemleri'])) {
+
+    $kullanicigel = $_POST['mesaj_gel'];
+
+
+    $yorumSor = $db->prepare("INSERT INTO mesaj SET
+    mesaj_detay=:mesaj_detay,
+    mesaj_gel=:mesaj_gel,
+    mesaj_gon=:mesaj_gon
+    ");
+
+    $yorumCek = $yorumSor->execute(array(
+        'mesaj_detay' => $_POST['mesaj_detay'],
+        'mesaj_gel' => htmlspecialchars($kullanicigel),
+        'mesaj_gon' => htmlspecialchars($_SESSION['kullaniciID'])
+    ));
+
+    if ($yorumCek) {
+        header("location:../../mesaj-gonder?durum=mesajGonderildi&kullaniciGel=$kullanicigel");
+        exit;
+    } else {
+        header("location:../production/404.php");
+        exit;
+    }
+}
+
+
+if (isset($_POST['mesajcevapver'])) {
+
+    $kullanicigel = $_POST['mesaj_gel'];
+
+
+    $yorumSor = $db->prepare("INSERT INTO mesaj SET
+    mesaj_detay=:mesaj_detay,
+    mesaj_gel=:mesaj_gel,
+    mesaj_gon=:mesaj_gon
+    ");
+
+    $yorumCek = $yorumSor->execute(array(
+        'mesaj_detay' => $_POST['mesaj_detay'],
+        'mesaj_gel' => htmlspecialchars($kullanicigel),
+        'mesaj_gon' => htmlspecialchars($_SESSION['kullaniciID'])
+    ));
+
+    if ($yorumCek) {
+        header("location:../../gelen-mesajlar");
+        exit;
+    } else {
+        header("location:../production/404.php");
+        exit;
+    }
+}
+
+
+if ($_GET['gidenMesajSil'] == "ok") {
+
+    $sil = $db->prepare("DELETE from mesaj where mesaj_id=:id");
+    $kontrol = $sil->execute(array(
+        'id' => $_GET['mesajID']
+    ));
+
+    if ($kontrol) {
+        Header("Location:../../giden-mesajlar?durum=ok");
+    } else {
+
+        Header("Location:../../giden-mesajlar?durum=no");
+    }
+}
+
+
+
+if ($_GET['gelenMesajSil'] == "ok") {
+
+    $sil = $db->prepare("DELETE from mesaj where mesaj_id=:id");
+    $kontrol = $sil->execute(array(
+        'id' => $_GET['mesajID']
+    ));
+
+    if ($kontrol) {
+        Header("Location:../../gelen-mesajlar?durum=ok");
+    } else {
+
+        Header("Location:../../gelen-mesajlar?durum=no");
     }
 }

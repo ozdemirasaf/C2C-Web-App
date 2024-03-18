@@ -1,6 +1,14 @@
 <?php
-ob_start();
-session_start();
+// ob_start();
+// session_start();
+
+if (basename($_SERVER['PHP_SELF'])  == basename(__FILE__)) {
+
+    exit("Burada Erişim Yapmanız Yasak !!");
+}
+
+date_default_timezone_set('Europe/Istanbul');
+
 require_once 'nedmin/netting/baglan.php';
 require_once 'nedmin/production/fonksiyon.php';
 //Belirli veriyi seçme işlemi
@@ -11,6 +19,8 @@ $ayarsor->execute(array(
 $ayarcek = $ayarsor->fetch(PDO::FETCH_ASSOC);
 
 
+// Session olu ise kayittan atma kismi
+
 if (isset($_SESSION['musterikullanici_mail'])) {
 
     $kullanicisor = $db->prepare("SELECT * FROM kullanici where kullanici_mail=:mail");
@@ -20,10 +30,43 @@ if (isset($_SESSION['musterikullanici_mail'])) {
     $say = $kullanicisor->rowCount();
     $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
 
+    // burada kullanici id'sini session'a alma kismi
+
     if (!isset($_SESSION['kullaniciID'])) {
         $_SESSION['kullaniciID'] = $kullanicicek['kullanici_id'];
     }
 }
+
+
+// Profil Online || Offline Kodları
+
+$suan = time();
+
+$fark = ($suan - $_SESSION['musterikullanici_sonzaman']);
+
+if ($fark > 50) {
+
+    $_SESSION['musterikullanici_sonzaman'] = strtotime(date("Y-m-d H:i:s"));
+
+
+    $zamanguncelle = $db->prepare("UPDATE kullanici SET
+    kullanici_sonzaman=:kullanici_sonzaman
+    WHERE kullanici_id={$_SESSION['kullaniciID']}");
+
+    $uptada = $zamanguncelle->execute(array(
+        'kullanici_sonzaman' => date("Y-m-d H:i:s")
+    ));
+}
+
+// Profil Online END
+
+// Site Bakimi
+
+if ($ayarcek['ayar_bakim'] == 1) {
+    header("location:siteBakim/bakim");
+    exit;
+}
+
 ?>
 
 <!doctype html>
@@ -94,6 +137,7 @@ if (isset($_SESSION['musterikullanici_mail'])) {
     <!-- Ck Editör -->
     <script src="nedmin/production/ckeditor/ckeditor.js"></script>
 
+
 </head>
 
 <body>
@@ -103,7 +147,7 @@ if (isset($_SESSION['musterikullanici_mail'])) {
 
     <!-- Add your site or application content here -->
     <!-- Preloader Start Here -->
-    <div id="preloader"></div>
+    <!-- <div id="preloader"></div> -->
     <!-- Preloader End Here -->
     <!-- Main Body Area Start Here -->
     <div id="wrapper">
@@ -115,7 +159,7 @@ if (isset($_SESSION['musterikullanici_mail'])) {
                         <div class="row">
                             <div class="col-lg-2 col-md-2 col-sm-2 hidden-xs">
                                 <div class="logo-area">
-                                    <a href="index.php"><img class="img-responsive" src="<?php echo $ayarcek['ayar_logo'] ?>" alt="logo"></a>
+                                    <a href="index"><img class="img-responsive" src="<?php echo $ayarcek['ayar_logo'] ?>" alt="logo"></a>
                                 </div>
                             </div>
                             <div class="col-lg-10 col-md-10 col-sm-10 col-xs-12">
@@ -174,48 +218,71 @@ if (isset($_SESSION['musterikullanici_mail'])) {
                                         </li>
 
                                         <li>
+
+                                            <?php
+
+
+                                            $mesajSay = $db->prepare("SELECT COUNT(mesaj_okunma) AS say FROM mesaj WHERE mesaj_okunma=:okunma AND mesaj_gel=:kullgel");
+
+                                            $mesajSay->execute(array(
+                                                'okunma' => 0,
+                                                'kullgel' => $_SESSION['kullaniciID']
+                                            ));
+
+
+                                            $saycek = $mesajSay->fetch(PDO::FETCH_ASSOC);
+
+
+
+                                            ?>
+
                                             <div class="notify-message">
-                                                <a href="#"><i class="fa fa-envelope-o" aria-hidden="true"></i><span>5</span></a>
+                                                <a href="gelen-mesajlar"><i class="fa fa-envelope-o" aria-hidden="true"></i><span><?php echo $saycek["say"]; ?></span></a>
                                                 <ul>
-                                                    <li>
-                                                        <div class="notify-message-img">
-                                                            <img class="img-responsive" src="img\profile\1.png" alt="profile">
-                                                        </div>
-                                                        <div class="notify-message-info">
-                                                            <div class="notify-message-sender">Kazi Fahim</div>
-                                                            <div class="notify-message-subject">Need WP Help!</div>
-                                                            <div class="notify-message-date">01 Dec, 2016</div>
-                                                        </div>
-                                                        <div class="notify-message-sign">
-                                                            <i class="fa fa-envelope-o" aria-hidden="true"></i>
-                                                        </div>
-                                                    </li>
-                                                    <li>
-                                                        <div class="notify-message-img">
-                                                            <img class="img-responsive" src="img\profile\2.png" alt="profile">
-                                                        </div>
-                                                        <div class="notify-message-info">
-                                                            <div class="notify-message-sender">Richi Lenal</div>
-                                                            <div class="notify-message-subject">Need HTML Help!</div>
-                                                            <div class="notify-message-date">01 Dec, 2016</div>
-                                                        </div>
-                                                        <div class="notify-message-sign">
-                                                            <i class="fa fa-envelope-o" aria-hidden="true"></i>
-                                                        </div>
-                                                    </li>
-                                                    <li>
-                                                        <div class="notify-message-img">
-                                                            <img class="img-responsive" src="img\profile\3.png" alt="profile">
-                                                        </div>
-                                                        <div class="notify-message-info">
-                                                            <div class="notify-message-sender">PsdBosS</div>
-                                                            <div class="notify-message-subject">Psd Template Help!</div>
-                                                            <div class="notify-message-date">01 Dec, 2016</div>
-                                                        </div>
-                                                        <div class="notify-message-sign">
-                                                            <i class="fa fa-reply" aria-hidden="true"></i>
-                                                        </div>
-                                                    </li>
+
+                                                    <?php
+
+                                                    $mesajsor = $db->prepare("SELECT mesaj.*,kullanici.* FROM mesaj INNER JOIN kullanici ON mesaj.mesaj_gon=kullanici.kullanici_id WHERE mesaj_gel=:id AND mesaj_okunma=:okunma ORDER BY mesaj_zaman DESC LIMIT 4");
+
+                                                    $mesajsor->execute(array(
+                                                        'id' => $_SESSION['kullaniciID'],
+                                                        'okunma' => 0
+                                                    ));
+                                                    ?>
+
+                                                    <?php
+                                                    if ($mesajsor->rowCount() == 0) { ?>
+                                                        <li>
+                                                            <div class="notify-message-info">
+                                                                <div class="notify-message-subject" style="color: black; font-family: sans-serif; font-size: 13px;">
+                                                                    Hiç Mesajınız Bulunmamaktadır !
+                                                                </div>
+                                                            </div>
+                                                        </li>
+
+                                                    <?php }
+
+                                                    while ($mesajcek = $mesajsor->fetch(PDO::FETCH_ASSOC)) {  ?>
+
+
+
+
+                                                        <li>
+                                                            <div class="notify-message-img">
+                                                                <img class="img-responsive" style="height: 40px; width: 40px; border-radius: 30px;" src="<?php echo $mesajcek['kullanici_magazafoto'] ?>" alt="profile">
+                                                            </div>
+                                                            <div class="notify-message-info">
+                                                                <div class="notify-message-sender"><?php echo $mesajcek['kullanici_ad'] . " " . $mesajcek['kullanici_soyad']  ?></div>
+                                                                <div class="notify-message-subject"><?php echo mb_substr($mesajcek['mesaj_detay'], 0, 10, "UTF-8") ?></div>
+                                                                <div class="notify-message-date"><?php echo $mesajcek['mesaj_zaman'] ?></div>
+                                                            </div>
+                                                            <div class="notify-message-sign">
+                                                                <a href="mesaj-detay?mesajId=<?php echo $mesajcek['mesaj_id'] ?>&kullanicigon=<?php echo $mesajcek['mesaj_gon'] ?>"> <i class="fa fa-envelope-o" aria-hidden="true"></i></a>
+                                                            </div>
+                                                        </li>
+
+                                                    <?php } ?>
+
                                                 </ul>
                                             </div>
                                         </li>
@@ -233,7 +300,33 @@ if (isset($_SESSION['musterikullanici_mail'])) {
                                                     </div>
                                                     <div class="user-account-title">
                                                         <div class="user-account-name"><?php echo $kullanicicek['kullanici_ad'] ?></div>
-                                                        <div class="user-account-balance">$171.00</div>
+                                                        <div class="user-account-balance">
+
+                                                            <?php
+
+                                                            // Toplam Fiyat Hesaplama Kodları
+
+
+                                                            $siparissor = $db->prepare("SELECT SUM(urun_fiyat) AS toplam FROM siparis_detay WHERE kullanici_idsatici=:kullanici_id");
+                                                            $siparissor->execute(array(
+                                                                'kullanici_id' => $_SESSION['kullaniciID']
+                                                            ));
+
+                                                            $sipariscek = $siparissor->fetch(PDO::FETCH_ASSOC);
+
+
+                                                            if (isset($sipariscek['toplam'])) {
+
+                                                                echo $sipariscek['toplam'] . " " .  "₺";
+                                                            } else {
+                                                                echo 0;
+                                                            }
+
+
+                                                            ?>
+
+
+                                                        </div>
                                                     </div>
                                                     <div class="user-account-dropdown">
                                                         <i class="fa fa-angle-down" aria-hidden="true"></i>
@@ -275,8 +368,8 @@ if (isset($_SESSION['musterikullanici_mail'])) {
                     <div class="container">
                         <nav id="desktop-nav">
                             <ul>
-                                <li class="active"><a href="index.php">Anasayfa</a></li>
-                                <li><a href="kategoriler.php">Kategoriler</a></li>
+                                <li class="active"><a href="index">Anasayfa</a></li>
+                                <li><a href="kategoriler">Kategoriler</a></li>
 
                                 <?php
                                 $kategorisor = $db->prepare("SELECT * FROM kategori WHERE kategori_onecikar=:onecikar order by kategori_sira ASC");
@@ -287,13 +380,15 @@ if (isset($_SESSION['musterikullanici_mail'])) {
                                 while ($kategoricek = $kategorisor->fetch(PDO::FETCH_ASSOC)) {
                                 ?>
 
-                                    <li><a href="#"><?php echo $kategoricek['kategori_ad'] ?></a></li>
+                                    <li><a href="kategoriler-<?= seo($kategoricek['kategori_ad']) . "-" . $kategoricek['kategori_id']; ?>"><?php echo $kategoricek['kategori_ad'] ?></a></li>
                                 <?php } ?>
                             </ul>
                         </nav>
                     </div>
                 </div>
             </div>
+
+
             <!-- Mobile Menu Area Start -->
             <div class="mobile-menu-area">
                 <div class="container">
@@ -302,60 +397,30 @@ if (isset($_SESSION['musterikullanici_mail'])) {
                             <div class="mobile-menu">
                                 <nav id="dropdown">
                                     <ul>
-                                        <li class="active"><a href="#">Home</a>
-                                            <ul>
-                                                <li><a href="index.htm">Home 1</a></li>
-                                                <li><a href="index2.htm">Home 2</a></li>
-                                            </ul>
-                                        </li>
-                                        <li><a href="about.htm">About</a></li>
-                                        <li><a href="#">Pages</a>
-                                            <ul class="mega-menu-area">
-                                                <li>
-                                                    <a href="index.htm">Home 1</a>
-                                                    <a href="index2.htm">Home 2</a>
-                                                    <a href="about.htm">About</a>
-                                                    <a href="product-page-grid.htm">Product Grid</a>
-                                                </li>
-                                                <li>
-                                                    <a href="product-page-list.htm">Product List</a>
-                                                    <a href="product-category-grid.htm">Category Grid</a>
-                                                    <a href="product-category-list.htm">Category List</a>
-                                                    <a href="single-product.htm">Product Details</a>
-                                                </li>
-                                                <li>
-                                                    <a href="profile.htm">Profile</a>
-                                                    <a href="favourites-grid.htm">Favourites Grid</a>
-                                                    <a href="favourites-list.htm">Favourites List</a>
-                                                    <a href="settings.htm">Settings</a>
-                                                </li>
-                                                <li>
-                                                    <a href="upload-products.htm">Upload Products</a>
-                                                    <a href="sales-statement.htm">Sales Statement</a>
-                                                    <a href="withdrawals.htm">Withdrawals</a>
-                                                    <a href="404.htm">404</a>
-                                                </li>
-                                            </ul>
-                                        </li>
-                                        <li><a href="product-page-grid.htm">WordPress</a></li>
-                                        <li><a href="product-category-grid.htm">Joomla</a></li>
-                                        <li><a href="product-category-list.htm">Plugins</a></li>
-                                        <li><a href="product-page-list.htm">Components</a></li>
-                                        <li><a href="product-category-grid.htm">PSD</a></li>
-                                        <li><a href="#">Blog</a>
-                                            <ul>
-                                                <li><a href="blog.htm">Blog</a></li>
-                                                <li><a href="single-blog.htm">Blog Details</a></li>
-                                                <li class="has-child-menu"><a href="#">Second Level</a>
-                                                    <ul class="thired-level">
-                                                        <li><a href="index.htm">Thired Level 1</a></li>
-                                                        <li><a href="index.htm">Thired Level 2</a></li>
-                                                    </ul>
-                                                </li>
-                                            </ul>
-                                        </li>
-                                        <li><a href="contact.htm">Contact</a></li>
-                                        <li><a href="help.htm">Help</a></li>
+
+
+                                        <li class="active"><a href="index">Anasayfa</a></li>
+
+                                        <li><a href="login">Üye Giriş</a></li>
+
+                                        <li><a href="register">Üye Kayıt</a></li>
+
+                                        <li><a href="kategoriler">Kategoriler</a></li>
+
+                                        <?php
+                                        $kategorisor = $db->prepare("SELECT * FROM kategori WHERE kategori_onecikar=:onecikar order by kategori_sira ASC");
+                                        $kategorisor->execute(array(
+                                            'onecikar' => 1
+                                        ));
+
+                                        while ($kategoricek = $kategorisor->fetch(PDO::FETCH_ASSOC)) {
+                                        ?>
+
+                                            <li><a href="kategoriler-<?= seo($kategoricek['kategori_ad']) . "-" . $kategoricek['kategori_id']; ?>"><?php echo $kategoricek['kategori_ad'] ?></a></li>
+                                        <?php } ?>
+
+
+
                                     </ul>
                                 </nav>
                             </div>

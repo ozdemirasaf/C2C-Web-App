@@ -13,6 +13,7 @@ $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
 
 
 
+
 ?>
 
 
@@ -28,40 +29,12 @@ $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
 <div class="profile-page-area bg-secondary section-space-bottom">
     <div class="container">
         <div class="row">
-            <div class="col-lg-9 col-md-8 col-sm-8 col-xs-12 col-lg-push-3 col-md-push-4 col-sm-push-4">
-                <div class="inner-page-main-body">
-                    <div class="single-banner">
-                        <img src="img\banner\1.jpg" alt="product" class="img-responsive">
-                    </div>
-                    <div class="author-summery">
-                        <div class="single-item">
-                            <div class="item-title">Şehir: </div>
-                            <div class="item-details"><?php echo $kullanicicek['kullanici_ilce'] . " / " . $kullanicicek['kullanici_il']  ?></div>
-                        </div>
-                        <div class="single-item">
-                            <div class="item-title">Kayıt Zamanı: </div>
-                            <div class="item-details"><?php echo $kullanicicek['kullanici_zaman'] ?></div>
-                        </div>
-                        <div class="single-item">
-                            <div class="item-title">Puanı: </div>
-                            <div class="item-details">
-                                <!-- <ul class="default-rating">
-                                    <li><i class="fa fa-star" aria-hidden="true"></i></li>
-                                    <li><i class="fa fa-star" aria-hidden="true"></i></li>
-                                    <li><i class="fa fa-star" aria-hidden="true"></i></li>
-                                    <li><i class="fa fa-star" aria-hidden="true"></i></li>
-                                    <li><i class="fa fa-star" aria-hidden="true"></i></li>
-                                    <li>(<span> 05</span> )</li>
-                                </ul> -->
-                            </div>
-                        </div>
-                        <div class="single-item">
-                            <div class="item-title">Satılan:</div>
-                            <div class="item-name">100</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
+            <!-- Üst banner -->
+            <?php require_once 'user-header.php' ?>
+
+            <!-- Üst banner end -->
+
             <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12 col-lg-pull-9 col-md-pull-8 col-sm-pull-8">
                 <div class="fox-sidebar">
                     <div class="sidebar-item">
@@ -73,9 +46,99 @@ $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
                                 </div>
                                 <div class="sidebar-author-content">
                                     <h3><?php echo $kullanicicek['kullanici_ad'] ?></h3>
-                                    <a href="#" class="view-profile"><i class="fa fa-circle" aria-hidden="true"></i>Online</a>
+                                    <?php
+
+                                    // Profil Online || Offline Kodları
+
+
+                                    $musterikullanici_sonzaman = strtotime($kullanicicek['kullanici_sonzaman']);
+
+                                    $suan = time();
+
+                                    $fark = ($suan - $musterikullanici_sonzaman);
+
+                                    if ($fark < 50) { ?>
+                                        <a href="#" class="view-profile"><i class="fa fa-circle" aria-hidden="true"></i> Online</a>
+                                    <?php } else { ?>
+                                        <a href="#" class="view-profile"><i style="color: red;" class="fa fa-circle" aria-hidden="true"></i> Offline</a>
+                                    <?php }
+                                    // Profil Online END
+
+                                    ?>
+
+
+
+
+
+
+
                                 </div>
+
                             </div>
+
+                            <ul class="sidebar-badges-item">
+
+                                <?php
+
+                                // Burada satıcının sattığı ürün kadar rütbe çıkarmaya yarayan kod parçası
+
+                                $urunSay = $db->prepare("SELECT COUNT(kullanici_idsatici) AS say FROM siparis_detay WHERE kullanici_idsatici=:id");
+
+                                $urunSay->execute(array(
+                                    'id' => $_GET['kullId']
+                                ));
+
+
+                                $saycek = $urunSay->fetch(PDO::FETCH_ASSOC);
+
+                                ?>
+
+
+                                <?php
+                                if ($saycek['say'] > 1 && $saycek['say'] <= 9) {
+                                ?>
+                                    <li><img src="img\profile\badges1.png" alt="badges" class="img-responsive"></li>
+
+                                <?php } else if ($saycek['say'] > 10 && $saycek['say'] <= 100) {
+                                ?>
+
+                                    <li><img src="img\profile\badges1.png" alt="badges" class="img-responsive"></li>
+                                    <li><img src="img\profile\badges2.png" alt="badges" class="img-responsive"></li>
+
+                                <?php } else if ($saycek['say'] > 100 && $saycek['say'] <= 1000) {
+                                ?>
+
+                                    <li><img src="img\profile\badges1.png" alt="badges" class="img-responsive"></li>
+                                    <li><img src="img\profile\badges2.png" alt="badges" class="img-responsive"></li>
+                                    <li><img src="img\profile\badges3.png" alt="badges" class="img-responsive"></li>
+
+                                <?php } elseif ($saycek['say'] > 1000 && $saycek['say'] <= 10000) {
+                                ?>
+
+                                    <li><img src="img\profile\badges1.png" alt="badges" class="img-responsive"></li>
+                                    <li><img src="img\profile\badges2.png" alt="badges" class="img-responsive"></li>
+                                    <li><img src="img\profile\badges3.png" alt="badges" class="img-responsive"></li>
+                                    <li><img src="img\profile\badges4.png" alt="badges" class="img-responsive"></li>
+
+                                <?php } else if ($saycek['say'] > 10000 && $saycek['say'] <= 100000) {
+                                ?>
+                                    <li><img src="img\profile\badges1.png" alt="badges" class="img-responsive"></li>
+                                    <li><img src="img\profile\badges2.png" alt="badges" class="img-responsive"></li>
+                                    <li><img src="img\profile\badges3.png" alt="badges" class="img-responsive"></li>
+                                    <li><img src="img\profile\badges4.png" alt="badges" class="img-responsive"></li>
+                                    <li><img src="img\profile\badges5.png" alt="badges" class="img-responsive"></li>
+
+                                <?php } ?>
+
+                                <!-- Bitti -->
+
+
+
+
+
+                            </ul>
+
+
 
                         </div>
                     </div>
@@ -86,8 +149,35 @@ $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
                         <li><a href="#"><i class="fa fa-pinterest" aria-hidden="true"></i></a></li>
                     </ul>
                     <ul class="sidebar-product-btn">
-                        <li><a href="contact.htm" class="buy-now-btn" id="buy-button"><i class="fa fa-envelope-o" aria-hidden="true"></i> Send Message</a></li>
-                        <li><a href="#" class="add-to-cart-btn" id="cart-button">Following</a></li>
+
+                        <?php
+
+
+                        if (empty($_SESSION['kullaniciID'])) {
+                        ?>
+
+                            <li><a href="login" class="buy-now-btn" id="buy-button"><i class="fa fa-envelope-o" aria-hidden="true"></i>Mesaj</a></li>
+
+                        <?php
+                        } else if ($_SESSION['kullaniciID'] == $_GET['kullId']) {
+                        ?>
+
+                            <li><a href="contact.htm" class="buy-now-btn" id="buy-button"><i class="fa fa-ban" aria-hidden="true"></i>Mesaj Yollayamazsın</a></li>
+
+                        <?php
+                        } else {
+                        ?>
+
+                            <li><a href="mesaj-gonder?kullaniciGel=<?php echo $_GET['kullId'] ?>" class="buy-now-btn" id="buy-button"><i class="fa fa-envelope-o" aria-hidden="true"></i> Mesaj </a></li>
+
+
+                        <?php } ?>
+
+
+
+
+
+                        <!-- <li><a href="#" class="add-to-cart-btn" id="cart-button">Following</a></li> -->
                     </ul>
 
                 </div>
@@ -98,38 +188,7 @@ $kullanicicek = $kullanicisor->fetch(PDO::FETCH_ASSOC);
 
 
             <div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
-                <ul class="profile-title">
-
-                    <li class="active"><a href="#Products" data-toggle="tab" aria-expanded="false"><i class="fa fa-briefcase" aria-hidden="true"></i> Ürünler (
-
-
-                            <?php
-
-
-
-
-                            $sayCekSorgu = $db->prepare("SELECT COUNT(kategori_id) AS say FROM urun WHERE kullanici_id=:id");
-                            $sayCekSorgu->execute(array(
-                                'id' => $kullanicicek['kullanici_id']
-                            ));
-
-                            $sayCekSonucu = $sayCekSorgu->fetch(PDO::FETCH_ASSOC);
-
-                            echo $sayCekSonucu['say'];
-
-
-                            ?>
-
-
-                            )</a></li>
-
-
-                    <li class=""><a href="#Profile" data-toggle="tab" aria-expanded="false"><i class="fa fa-user" aria-hidden="true"></i> Hakkımızda</a></li>
-
-
-                    <li><a href="#Message" data-toggle="tab" aria-expanded="false"><i class="fa fa-envelope-o" aria-hidden="true"></i> Yorumlar</a></li>
-
-                </ul>
+                <?php require_once 'user-sidebar.php' ?>
             </div>
 
 

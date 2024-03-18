@@ -1,9 +1,8 @@
 <?php
-ob_start();
-session_start();
 
-include 'baglan.php';
-include '../production/fonksiyon.php';
+
+require_once 'baglan.php';
+require_once '../production/fonksiyon.php';
 
 
 
@@ -307,7 +306,7 @@ if (isset($_POST['mazagaUrunEkle'])) {
         'kategori_id' => htmlspecialchars($_POST['kategori_id']),
         'kullanici_id' => htmlspecialchars($_SESSION['kullaniciID']),
         'urun_ad' => htmlspecialchars($_POST['urun_ad']),
-        'urun_detay' => seo(htmlspecialchars($_POST['urun_detay'])),
+        'urun_detay' => htmlspecialchars($_POST['urun_detay']),
         'urun_fiyat' => htmlspecialchars($_POST['urun_fiyat']),
         'urun_stok' => htmlspecialchars($_POST['urun_stok']),
         'urunfoto_resimyol' => $refimgyol

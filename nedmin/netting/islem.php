@@ -1,6 +1,4 @@
 <?php
-ob_start();
-session_start();
 
 include 'baglan.php';
 include '../production/fonksiyon.php';
@@ -260,14 +258,16 @@ if (isset($_POST['genelayarkaydet'])) {
 		ayar_title=:ayar_title,
 		ayar_description=:ayar_description,
 		ayar_keywords=:ayar_keywords,
-		ayar_author=:ayar_author
+		ayar_author=:ayar_author,
+		ayar_bakim=:ayar_bakim
 		WHERE ayar_id=0");
 
 	$update = $ayarkaydet->execute(array(
 		'ayar_title' => $_POST['ayar_title'],
 		'ayar_description' => $_POST['ayar_description'],
 		'ayar_keywords' => $_POST['ayar_keywords'],
-		'ayar_author' => $_POST['ayar_author']
+		'ayar_author' => $_POST['ayar_author'],
+		'ayar_bakim' => $_POST['ayar_bakim']
 	));
 
 

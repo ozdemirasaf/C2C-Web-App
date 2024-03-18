@@ -1,65 +1,20 @@
-<?php require_once 'header.php' ?>
+<?php
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
+require_once 'header.php';
+?>
 <!-- Main Banner 1 Area Start Here -->
 <?php
-require_once 'search.php';
 
-if (empty($_POST)) {
-    header("location:404.php");
-    exit;
-}
-
-
-if (isset($_POST['searchSayfa'])) {
-
-    $searchkeywords = $_POST['searchkeywords'];
-
-
-
-    $sayfada = 2;  // sayfa sayısını gösterme
-
-    $sorgu = $db->prepare("SELECT * FROM urun WHERE kategori_id=:kategori_id");
-
-    $sorgu->execute(array(
-        'kategori_id' => $_GET['kategori_id']
-    ));
-
-    $toplamIcerik = $sorgu->rowCount();
-
-
-    $toplamSayfa = ceil($toplamIcerik / $sayfada);
-
-    // Eğer sayfa girilmemişse 1 varsayalım.
-
-    $sayfa = isset($_GET['sayfa']) ? (int) $_GET['sayfa'] : 1;
-
-    // Eğer 1'den Küçük bir sayfa sayısı girildiyse  1 yapalım.
-
-
-    if ($sayfa < 1) $sayfa = 1;
-
-    // Toplam sayfa sayımızdan fazla yazılırsa en son sayfayı varsayılım.
-
-    if ($sayfa > $toplamSayfa) $sayfa = $toplamSayfa;
-
-    $limit = ($sayfa - 1) * $sayfada;
-
-
-
-    // Tüm tablo sutunlarini cekilmesi
-
-    $urunsor = $db->prepare("SELECT urun.*, kategori.*,kullanici.* FROM urun INNER JOIN kategori ON urun.kategori_id=kategori.kategori_id
-     INNER JOIN kullanici ON urun.kullanici_id=kullanici.kullanici_id WHERE urun_durum=:urun_durum AND urun.urun_ad LIKE '%$searchkeywords%'");
-
-    $urunsor->execute(array(
-        'urun_durum' => 1
-    ));
-
-    $say = $sorgu->rowCount();
-}
-
-                    
+// if (empty($_POST['searchSayfa'])) {
+//     header("location:404.php");
+//     exit;
+// }
 
 ?>
+
+
+
 
 
 
@@ -109,7 +64,83 @@ if (isset($_POST['searchSayfa'])) {
                                 <!-- Buraya While Gelecek -->
 
                                 <?php
-                                while ($uruncek = $urunSor->fetch(PDO::FETCH_ASSOC)) {
+
+
+
+                                // buradaki if'de search Yaptığım yerden gelen post Bilgisi 
+
+                                if (isset($_POST['searchSayfa'])) {
+
+                                    // Bitti
+
+
+                                    // PDO sorgusunda inputtan falan bilgiye göre search olcağı için bilgiyi yakalıyoruz
+
+                                    $search = $_POST['searchkeyword'];
+
+                                    // Bitti
+
+
+                                    // Sayfada Kaç Ürün Olduğunu Ayarlayan Kod Parçası
+
+                                    $sayfada = 2;
+
+
+                                    $sorgu = $db->prepare("SELECT * FROM urun WHERE urun_ad LIKE ?");
+
+                                    $sorgu->execute(array(
+                                        "%$search%"
+                                    ));
+
+                                    $toplam_icerik = $sorgu->rowCount();
+
+                                    $toplam_sayfa = ceil($toplam_icerik / $sayfada);
+
+                                    $sayfa = isset($_GET['sayfa']) ? (int) $_GET['sayfa'] : 1;
+
+                                    if ($sayfa < 1) $sayfa = 1;
+
+                                    if ($sayfa > $toplam_sayfa) $sayfa = $toplam_sayfa;
+
+                                    $limit = ($sayfa - 1) * $sayfa;
+
+                                    // Bitti
+
+
+                                    // Ürünleri Çeken Kod Parçası
+
+                                    /*
+                                            * And'den sonra (urun_ad) sutun adi yapmak istedigin search nerede aradıgını gosterir
+                                            
+                                            * LIKE parametre PDO'nun search yapılacaksa kullanılan mecburi parametresi
+
+                                            * ( '%$search%' ) => girilen degisken urun_ad sutunundan $search verisinin bilgileri aynı mı diye kotrol amaclidir
+
+
+                                    */
+
+                                    $urunsor = $db->prepare("SELECT urun.*,kategori.*,kullanici.* FROM urun INNER JOIN kategori ON urun.kategori_id=kategori.kategori_id
+                                    INNER JOIN kullanici ON urun.kullanici_id=kullanici.kullanici_id
+                                    WHERE urun_durum=:urun_durum AND urun.urun_ad LIKE '%$search%' ORDER BY urun_zaman DESC LIMIT $limit,$sayfada");
+
+                                    $urunsor->execute(array(
+                                        'urun_durum' => 1
+                                    ));
+                                    // Aşağıda fetch Yapılıyor ve Bitiyor
+
+                                    $say = $sorgu->rowCount();
+
+                                    if ($say == 0) {
+                                        echo "Ürün Bulnumadı.";
+                                    }
+                                }
+
+
+
+
+
+                                while ($uruncek = $urunsor->fetch(PDO::FETCH_ASSOC)) {
+
                                 ?>
 
                                     <a href="urun-detay.php?urunId=<?php echo $uruncek['urun_id'] ?>">
@@ -133,8 +164,8 @@ if (isset($_POST['searchSayfa'])) {
                                                     </div>
                                                     <div class="item-profile">
                                                         <div class="profile-title">
-                                                            <div class="img-wrapper"><img width="38" height="38" src="<?php echo $kullanicicek['kullanici_magazafoto'] ?>" alt="profile" class="img-responsive img-circle"></div>
-                                                            <span><?php echo $kullanicicek['kullanici_ad'] ?></span>
+                                                            <div class="img-wrapper"><img width="38" height="38" src="<?php echo $uruncek['kullanici_magazafoto'] ?>" alt="profile" class="img-responsive img-circle"></div>
+                                                            <span><?php echo $uruncek['kullanici_ad'] ?></span>
                                                         </div>
                                                         <div class="profile-rating-info">
                                                             <ul>
@@ -157,26 +188,116 @@ if (isset($_POST['searchSayfa'])) {
                                         </div>
                                     </a>
 
+
                                 <?php } ?>
+
+
+                                <!-- <li class="active"><a href="#">1</a></li>
+                                            <li><a href="#">2</a></li>
+                                            <li><a href="#">3</a></li> -->
 
 
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                                         <ul class="pagination-align-left">
-                                            <li class="active"><a href="#">1</a></li>
-                                            <li><a href="#">2</a></li>
-                                            <li><a href="#">3</a></li>
+
+
+                                            <?php
+
+                                            $s = 0;
+
+                                            while ($s < $toplam_sayfa) {
+
+                                                $s++;
+
+                                                if (!empty($_GET['kategori_id'])) {
+
+                                                    if ($s == $sayfa) {
+                                            ?>
+                                                        <li class="active"><a href="kategoriler-<?php echo $_GET['sef']; ?>-<?php echo $_GET['kategori_id'] ?>?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a></li>
+                                                    <?php
+                                                    } else {
+                                                    ?>
+                                                        <li><a href="kategoriler-<?php echo $_GET['sef']; ?>-<?php echo $_GET['kategori_id'] ?>?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a></li>
+                                                    <?php
+                                                    }
+                                                } else {
+
+                                                    if ($s == $sayfa) {
+                                                    ?>
+                                                        <li><a href="kategoriler?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a></li>
+                                                    <?php
+                                                    } else {
+                                                    ?>
+                                                        <li><a href="kategoriler?sayfa=<?php echo $s; ?>"><?php echo $s; ?></a></li>
+                                            <?php
+                                                    }
+                                                }
+                                            }
+                                            ?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                                         </ul>
                                     </div>
                                 </div>
+
+
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <?php require_once 'sidebar.php' ?>
+
+            <!-- Sidebar -->
+
+            <?php require_once 'sidebar.php'; ?>
+
+
+
+
+            <!-- Fiyat Aralığı -->
+
+            <!-- <div class=" sidebar-item">
+                                                                <div class="sidebar-item-inner">
+                                                                    <h3 class="sidebar-item-title">Price Range</h3>
+                                                                    <div id="price-range-wrapper" class="price-range-wrapper">
+                                                                        <div id="price-range-filter"></div>
+                                                                        <div class="price-range-select">
+                                                                            <div class="price-range" id="price-range-min"></div>
+                                                                            <div class="price-range" id="price-range-max"></div>
+                                                                        </div>
+                                                                        <button class="sidebar-full-width-btn disabled" type="submit" value="Login"><i class="fa fa-search" aria-hidden="true"></i>Search</button>
+                                                                    </div>
+                                                                </div>
+                                    </div> -->
+
+
         </div>
     </div>
+
+
+
+
+
+
+
+
+
+</div>
+</div>
 </div>
 <!-- Product Page Grid End Here -->
 <?php require_once 'footer.php' ?>

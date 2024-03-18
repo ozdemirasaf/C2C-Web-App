@@ -8,11 +8,13 @@
         <?php
         }
         ?>
-        <li><a href="hesabim.php">Siparişlerim</a></li>
-        <li><a href="hesabim.php">Hesap Bilgilerim</a></li>
-        <li><a href="resim-guncelle.php">Resim Güncelle</a></li>
-        <li><a href="adresDuzenle.php">Adres-Bilgileri</a></li>
-        <li><a href="sifreGuncelle.php">Şifre Güncelle</a></li>
+        <li><a href="siparislerim">Siparişlerim</a></li>
+        <li><a href="hesabim">Hesap Bilgilerim</a></li>
+        <li><a href="giden-mesajlar">Giden Mesajlar</a></li>
+        <li><a href="gelen-mesajlar">Gelen Mesajlar</a></li>
+        <li><a href="resim-guncelle">Resim Güncelle</a></li>
+        <li><a href="adresDuzenle">Adres-Bilgileri</a></li>
+        <li><a href="sifreGuncelle">Şifre Güncelle</a></li>
 
     </ul>
 
@@ -33,11 +35,10 @@
             <?php
             }
             ?>
-            <li><a href="urun-ekle.php">Ürün ekle</a></li>
-            <li><a href="urunlerim.php">Ürünlerim</a></li>
-            <li><a href="sifreGuncelle.php">Yeni Siparişlerim</a></li>
-            <li><a href="sifreGuncelle.php">Tamamlanan Siparişler</a></li>
-            <li><a href="sifreGuncelle.php">Mesajlar</a></li>
+            <li><a href="urun-ekle">Ürün ekle</a></li>
+            <li><a href="urunlerim">Ürünlerim</a></li>
+            <li><a href="yeni-siparisler">Yeni Siparişlerim</a></li>
+            <li><a href="tamamlanan-siparisler">Tamamlanan Siparişler</a></li>
             <li><a href="sifreGuncelle.php">Ayarlar</a></li>
 
         </ul>

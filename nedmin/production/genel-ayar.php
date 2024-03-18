@@ -129,6 +129,53 @@ include 'header.php';
                 </div>
               </div>
 
+              <div class="form-group">
+                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">Kullanıcı Durum<span class="required">*</span>
+                </label>
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                  <select id="heard" class="form-control" name="ayar_bakim" required>
+
+
+
+                    <!-- Kısa İf Kulllanımı 
+
+                    <?php echo $kullanicicek['ayar_bakimayar_bakim'] == '1' ? 'selected=""' : ''; ?>
+
+                  -->
+
+
+
+
+                    <option value="1" <?php echo $ayarcek['ayar_bakim'] == '1' ? 'selected=""' : ''; ?>>Bakımda</option>
+
+
+
+                    <option value="0" <?php if ($ayarcek['ayar_bakim'] == 0) {
+                                        echo 'selected=""';
+                                      } ?>>Bakımda Değil</option>
+                    <!-- <?php
+
+                          if ($kullanicicek['ayar_bakim'] == 0) { ?>
+
+
+                   <option value="0">Pasif</option>
+                   <option value="1">Aktif</option>
+
+
+                   <?php } else { ?>
+
+                   <option value="1">Aktif</option>
+                   <option value="0">Pasif</option>
+
+                   <?php  }
+
+                    ?> -->
+
+
+                  </select>
+                </div>
+              </div>
+
 
 
               <div class="ln_solid"></div>
